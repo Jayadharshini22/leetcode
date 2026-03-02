@@ -1,0 +1,48 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        if (matrix == null || matrix.length == 0) return 0;
+        
+        int cols = matrix[0].length;
+        int[] heights = new int[cols];
+        int maxArea = 0;
+        
+        for (char[] row : matrix) {
+            for (int j = 0; j < cols; j++) {
+                // Update heights: '1' increments, '0' resets
+                heights[j] = (row[j] == '1') ? heights[j] + 1 : 0;
+            }
+            // Calculate max rectangle for this row's histogram
+            maxArea = Math.max(maxArea, largestRectangleArea(heights));
+        }
+        
+        return maxArea;
+    }
+
+    private int largestRectangleArea(int[] heights) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(-1); // Sentinel value for boundary
+        int maxArea = 0;
+        
+        for (int i = 0; i < heights.length; i++) {
+            // Maintain a monotonic increasing stack
+            while (stack.peek() != -1 && heights[stack.peek()] >= heights[i]) {
+                int height = heights[stack.pop()];
+                int width = i - stack.peek() - 1;
+                maxArea = Math.max(maxArea, height * width);
+            }
+            stack.push(i);
+        }
+        
+        // Clean up remaining bars in the stack
+        while (stack.peek() != -1) {
+            int height = heights[stack.pop()];
+            int width = heights.length - stack.peek() - 1;
+            maxArea = Math.max(maxArea, height * width);
+        }
+        
+        return maxArea;
+    }
+}
