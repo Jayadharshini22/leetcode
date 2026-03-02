@@ -1,0 +1,54 @@
+import java.util.*;
+
+class Solution {
+    public List<Integer> findSubstring(String s, String[] words) {
+        List<Integer> res = new ArrayList<>();
+        if (s == null || words == null || words.length == 0) return res;
+
+        int wordLen = words[0].length();
+        int wordCount = words.length;
+        int totalLen = wordLen * wordCount;
+        int sLen = s.length();
+
+        // 1. Map of required word frequencies
+        Map<String, Integer> counts = new HashMap<>();
+        for (String word : words) {
+            counts.put(word, counts.getOrDefault(word, 0) + 1);
+        }
+
+        // 2. Iterate through all possible starting offsets
+        for (int i = 0; i < wordLen; i++) {
+            int left = i, count = 0;
+            Map<String, Integer> windowMap = new HashMap<>();
+
+            // 3. Slide the window by wordLen steps
+            for (int j = i; j <= sLen - wordLen; j += wordLen) {
+                String word = s.substring(j, j + wordLen);
+
+                if (counts.containsKey(word)) {
+                    windowMap.put(word, windowMap.getOrDefault(word, 0) + 1);
+                    count++;
+
+                    // If we have too many instances of 'word', shrink from left
+                    while (windowMap.get(word) > counts.get(word)) {
+                        String leftWord = s.substring(left, left + wordLen);
+                        windowMap.put(leftWord, windowMap.get(leftWord) - 1);
+                        count--;
+                        left += wordLen;
+                    }
+
+                    // Found a valid concatenation
+                    if (count == wordCount) {
+                        res.add(left);
+                    }
+                } else {
+                    // Invalid word found, reset the window
+                    windowMap.clear();
+                    count = 0;
+                    left = j + wordLen;
+                }
+            }
+        }
+        return res;
+    }
+}
